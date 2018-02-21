@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Map" %}{% endblock %}
+
+{% block page_header %}
+  {% include "horizon/common/_page_header.html" with title=_("Map") %}
+{% endblock page_header %}
+
+{% block main %}
+	<div id="project_mapdiv" style="min-height:500px; margin-bottom: 10px;">
+		<script>
+			$(document).ready(function(){
+				var json = {{ boards|safe }};
+				var array_coord = {"coordinates": []};
+
+				for(var i=0;i<json["list"].length;i++)
+					array_coord["coordinates"].push({"lat": json["list"][i].location[0].latitude, "lon": json["list"][i].location[0].longitude, "alt": json["list"][i].location[0].altitude, "updated": json["list"][i].location[0].updated_at, "label": json["list"][i].name, "status": json["list"][i].status});
+
+				render_map("project_mapdiv", array_coord);
+			});
+		</script>
+	</div>
+{% endblock %}
