@@ -10,6 +10,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import cPickle
 import logging
 
 from django.core.urlresolvers import reverse
@@ -23,15 +24,15 @@ from horizon import tables
 from horizon import tabs
 from horizon.utils import memoized
 
-import cPickle
-
 from openstack_dashboard.api import iotronic, keystone
 from openstack_dashboard import policy
 
-from openstack_dashboard.dashboards.admin.plugins import forms as project_forms
+from openstack_dashboard.dashboards.admin.plugins \
+    import forms as project_forms
 from openstack_dashboard.dashboards.admin.plugins \
     import tables as project_tables
-from openstack_dashboard.dashboards.admin.plugins import tabs as project_tabs
+from openstack_dashboard.dashboards.admin.plugins \
+    import tabs as project_tabs
 
 LOG = logging.getLogger(__name__)
 
@@ -53,8 +54,8 @@ class IndexView(tables.DataTableView):
                 users = keystone.user_list(self.request)
 
             except Exception:
-                exceptions.handle(self.request,
-                                  _('Unable to retrieve plugins list.'))
+                exceptions.handle(self.request, _('Unable to retrieve plugins \
+                                  list.'))
 
         # Admin_iot_project
         elif policy.check((("iot", "iot:list_project_plugins"),),
@@ -71,8 +72,8 @@ class IndexView(tables.DataTableView):
         else:
             # FROM
             """
-            msg = _("Insufficient privilege level \
-                    to view plugins information.")
+            msg = _("Insufficient privilege level to view
+                    plugins information.")
             messages.info(self.request, msg)
             """
             # TO
@@ -84,8 +85,8 @@ class IndexView(tables.DataTableView):
                 exceptions.handle(self.request,
                                   _('Unable to retrieve user plugins list.'))
 
-        # Replace owner column values (user.id) with user.name
-        # (only Admin can see human-readable names)
+        # Replace owner column values (user.id) with user.name (only Admin
+        # can see human-readable names)
         for plugin in plugins:
             for user in users:
                 if plugin.owner == user.id:
@@ -125,7 +126,7 @@ class InjectView(forms.ModalFormView):
         except Exception:
             redirect = reverse("horizon:admin:plugins:index")
             exceptions.handle(self.request,
-                              _('Unable to inject plugin.'),
+                              _('Unable to get plugin information.'),
                               redirect=redirect)
 
     def get_context_data(self, **kwargs):
@@ -169,7 +170,7 @@ class StartView(forms.ModalFormView):
         except Exception:
             redirect = reverse("horizon:admin:plugins:index")
             exceptions.handle(self.request,
-                              _('Unable to start plugin.'),
+                              _('Unable to get plugin information.'),
                               redirect=redirect)
 
     def get_context_data(self, **kwargs):
@@ -213,7 +214,7 @@ class StopView(forms.ModalFormView):
         except Exception:
             redirect = reverse("horizon:admin:plugins:index")
             exceptions.handle(self.request,
-                              _('Unable to stop plugin.'),
+                              _('Unable to get plugin information.'),
                               redirect=redirect)
 
     def get_context_data(self, **kwargs):
@@ -257,7 +258,7 @@ class CallView(forms.ModalFormView):
         except Exception:
             redirect = reverse("horizon:admin:plugins:index")
             exceptions.handle(self.request,
-                              _('Unable to call plugin.'),
+                              _('Unable to get plugin information.'),
                               redirect=redirect)
 
     def get_context_data(self, **kwargs):
@@ -301,7 +302,7 @@ class RemoveView(forms.ModalFormView):
         except Exception:
             redirect = reverse("horizon:admin:plugins:index")
             exceptions.handle(self.request,
-                              _('Unable to remove plugin.'),
+                              _('Unable to get plugin information.'),
                               redirect=redirect)
 
     def get_context_data(self, **kwargs):
@@ -344,7 +345,7 @@ class UpdateView(forms.ModalFormView):
         except Exception:
             redirect = reverse("horizon:admin:plugins:index")
             exceptions.handle(self.request,
-                              _('Unable to update plugin.'),
+                              _('Unable to get plugin information.'),
                               redirect=redirect)
 
     def get_context_data(self, **kwargs):

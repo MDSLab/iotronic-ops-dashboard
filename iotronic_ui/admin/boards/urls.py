@@ -14,9 +14,10 @@ from django.conf.urls import url
 
 from openstack_dashboard.dashboards.admin.boards import views
 
+
 urlpatterns = [
     url(r'^$', views.IndexView.as_view(), name='index'),
-    # url(r'^create/$', views.CreateView.as_view(), name='create'),
+    url(r'^create/$', views.CreateView.as_view(), name='create'),
     url(r'^(?P<board_id>[^/]+)/update/$', views.UpdateView.as_view(),
         name='update'),
     url(r'^(?P<board_id>[^/]+)/removeplugins/$',

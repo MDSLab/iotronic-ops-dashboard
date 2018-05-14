@@ -10,10 +10,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import json
 import logging
-
-# import cPickle
 
 from django.core.urlresolvers import reverse
 from django.core.urlresolvers import reverse_lazy
@@ -36,7 +33,6 @@ from openstack_dashboard.dashboards.project.boards \
 from openstack_dashboard.dashboards.project.boards \
     import tabs as project_tabs
 
-
 LOG = logging.getLogger(__name__)
 
 
@@ -48,21 +44,6 @@ class IndexView(tables.DataTableView):
     def get_data(self):
         boards = []
 
-        # FROM
-        """
-        if policy.check((("identity", "identity:list_roles"),), self.request):
-            try:
-                boards = iotronic.board_list(self.request, None, None)
-                # LOG.debug('IOT BOARDS: %s', boards)
-            except Exception:
-                exceptions.handle(self.request,
-                                  _('Unable to retrieve boards list.'))
-        else:
-            msg = _("Insufficient privilege level to view boards information.")
-            messages.info(self.request, msg)
-        """
-
-        # TO
         # Admin
         if policy.check((("iot", "iot:list_all_boards"),), self.request):
             try:
@@ -90,6 +71,11 @@ class IndexView(tables.DataTableView):
                 exceptions.handle(self.request,
                                   _('Unable to retrieve user boards list.'))
 
+        for board in boards:
+            board_services = iotronic.services_on_board(self.request, board.uuid, True)
+
+            # board.__dict__.update(dict(services=board_services))
+            board._info.update(dict(services=board_services))
         return boards
 
 
@@ -122,7 +108,7 @@ class UpdateView(forms.ModalFormView):
         except Exception:
             redirect = reverse("horizon:project:boards:index")
             exceptions.handle(self.request,
-                              _('Unable to update board.'),
+                              _('Unable to get board information.'),
                               redirect=redirect)
 
     def get_context_data(self, **kwargs):
@@ -133,8 +119,6 @@ class UpdateView(forms.ModalFormView):
 
     def get_initial(self):
         board = self.get_object()
-
-        # LOG.debug("MELO BOARD INFO: %s", board)
         location = board.location[0]
 
         return {'uuid': board.uuid,
@@ -165,7 +149,7 @@ class RemovePluginsView(forms.ModalFormView):
         except Exception:
             redirect = reverse("horizon:project:boards:index")
             exceptions.handle(self.request,
-                              _('Unable to remove plugin.'),
+                              _('Unable to get board information.'),
                               redirect=redirect)
 
     def get_context_data(self, **kwargs):
@@ -177,24 +161,16 @@ class RemovePluginsView(forms.ModalFormView):
     def get_initial(self):
         board = self.get_object()
 
+        # Populate plugins
+        # TO BE DONE.....filter by available on this board!!!
+        # plugins = iotronic.plugin_list(self.request, None, None)
+        plugins = iotronic.plugins_on_board(self.request, board.uuid)
+
+        plugins.sort(key=lambda b: b.name)
+
         plugin_list = []
-        try:
-            plugins = iotronic.plugins_on_board(self.request, board.uuid)
-
-            for plugin in plugins:
-                plugin_info = iotronic.plugin_get(self.request, plugin.plugin,
-                                                  None)
-
-                plugin_list.append({"plugin": plugin.plugin,
-                                    "name": plugin_info.name})
-                plugin_list.sort(key=lambda b: b["name"])
-
-            plugin_list = json.dumps(plugin_list)
-
-        except Exception:
-            msg = ('Unable to retrieve board %s information') % {'name':
-                                                                 board.name}
-            exceptions.handle(self.request, msg, ignore=True)
+        for plugin in plugins:
+            plugin_list.append((plugin.uuid, _(plugin.name)))
 
         return {'uuid': board.uuid,
                 'name': board.name,
@@ -202,34 +178,12 @@ class RemovePluginsView(forms.ModalFormView):
 
 
 class DetailView(tabs.TabView):
-    # FROM
-    """
-    tab_group_class = project_tabs.InstanceDetailTabs
-    template_name = 'horizon/common/_detail.html'
-    redirect_url = 'horizon:project:instances:index'
-    page_title = "{{ instance.name|default:instance.id }}"
-    image_url = 'horizon:project:images:images:detail'
-    volume_url = 'horizon:project:volumes:volumes:detail'
-    """
-    # TO
     tab_group_class = project_tabs.BoardDetailTabs
     template_name = 'horizon/common/_detail.html'
     page_title = "{{ board.name|default:board.uuid }}"
 
     def get_context_data(self, **kwargs):
         context = super(DetailView, self).get_context_data(**kwargs)
-        # FROM
-        """
-        instance = self.get_data()
-        if instance.image:
-            instance.image_url = reverse(self.image_url,
-                                         args=[instance.image['id']])
-        instance.volume_url = self.volume_url
-        context["instance"] = instance
-        context["url"] = reverse(self.redirect_url)
-        context["actions"] = self._get_actions(instance)
-        """
-        # TO
         board = self.get_data()
         context["board"] = board
         context["url"] = reverse(self.redirect_url)
@@ -237,119 +191,32 @@ class DetailView(tabs.TabView):
 
         return context
 
-    # FROM
-    """
-    def _get_actions(self, instance):
-        table = project_tables.InstancesTable(self.request)
-        return table.render_row_actions(instance)
-    """
-    # TO
     def _get_actions(self, board):
         table = project_tables.BoardsTable(self.request)
         return table.render_row_actions(board)
 
-    # FROM
-    """
     @memoized.memoized_method
     def get_data(self):
-        instance_id = self.kwargs['instance_id']
-
-        try:
-            instance = api.nova.server_get(self.request, instance_id)
-        except Exception:
-            redirect = reverse(self.redirect_url)
-            exceptions.handle(self.request,
-                              _('Unable to retrieve details for '
-                                'instance "%s".') % instance_id,
-                              redirect=redirect)
-            # Not all exception types handled above will result in a redirect.
-            # Need to raise here just in case.
-            raise exceptions.Http302(redirect)
-
-        choices = project_tables.STATUS_DISPLAY_CHOICES
-        instance.status_label = (
-            filters.get_display_label(choices, instance.status))
-
-        try:
-            instance.volumes = api.nova.instance_volumes_list(self.request,
-                                                              instance_id)
-            # Sort by device name
-            instance.volumes.sort(key=lambda vol: vol.device)
-        except Exception:
-            msg = _('Unable to retrieve volume list for instance '
-                    '"%(name)s" (%(id)s).') % {'name': instance.name,
-                                               'id': instance_id}
-            exceptions.handle(self.request, msg, ignore=True)
-
-        try:
-            instance.full_flavor = api.nova.flavor_get(
-                self.request, instance.flavor["id"])
-        except Exception:
-            msg = _('Unable to retrieve flavor information for instance '
-                    '"%(name)s" (%(id)s).') % {'name': instance.name,
-                                               'id': instance_id}
-            exceptions.handle(self.request, msg, ignore=True)
-
-        try:
-            instance.security_groups = api.network.server_security_groups(
-                self.request, instance_id)
-        except Exception:
-            msg = _('Unable to retrieve security groups for instance '
-                    '"%(name)s" (%(id)s).') % {'name': instance.name,
-                                               'id': instance_id}
-            exceptions.handle(self.request, msg, ignore=True)
-
-        try:
-            api.network.servers_update_addresses(self.request, [instance])
-        except Exception:
-            msg = _('Unable to retrieve IP addresses from Neutron for '
-                    'instance "%(name)s" (%(id)s).') % {'name': instance.name,
-                                                        'id': instance_id}
-            exceptions.handle(self.request, msg, ignore=True)
-
-        return instance
-    """
-
-    # TO
-    @memoized.memoized_method
-    def get_data(self):
-
-        plugin_list = []
         board_id = self.kwargs['board_id']
         try:
+
+            board_services = []
+            board_plugins = []
+
             board = iotronic.board_get(self.request, board_id, None)
+            board_services = iotronic.services_on_board(self.request, board_id, True)
+            board._info.update(dict(services=board_services))
 
-            plugins = iotronic.plugins_on_board(self.request, board_id)
-
-            for plugin in plugins:
-                plugin_info = iotronic.plugin_get(self.request, plugin.plugin,
-                                                  None)
-
-                plugin_list.append({"plugin": plugin.plugin,
-                                    "name": plugin_info.name})
-                # plugin_list.sort(key=lambda b: b.name)
-
-            if len(plugin_list) != 0:
-                board._info["plugins"] = plugin_list
+            board_plugins = iotronic.plugins_on_board(self.request, board_id)
+            board._info.update(dict(plugins=board_plugins))
+            # LOG.debug("BOARD: %s\n\n%s", board, board._info)
 
         except Exception:
             msg = ('Unable to retrieve board %s information') % {'name':
                                                                  board.name}
             exceptions.handle(self.request, msg, ignore=True)
-
-        # LOG.debug("MELO board %s", board)
-        # LOG.debug("MELO PLUGINS %s", plugin_list)
-
         return board
 
-    # FROM
-    """
-    def get_tabs(self, request, *args, **kwargs):
-        instance = self.get_data()
-        return self.tab_group_class(request, instance=instance, **kwargs)
-    """
-
-    # TO
     def get_tabs(self, request, *args, **kwargs):
         board = self.get_data()
         return self.tab_group_class(request, board=board, **kwargs)

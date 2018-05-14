@@ -28,7 +28,7 @@ class CreatePluginLink(tables.LinkAction):
     url = "horizon:admin:plugins:create"
     classes = ("ajax-modal",)
     icon = "plus"
-    # policy_rules = (("iot", "iot:create_board"),)
+    # policy_rules = (("iot", "iot:create_plugin"),)
 
 
 class EditPluginLink(tables.LinkAction):
@@ -37,13 +37,12 @@ class EditPluginLink(tables.LinkAction):
     url = "horizon:admin:plugins:update"
     classes = ("ajax-modal",)
     icon = "pencil"
-    # policy_rules = (("iot", "iot:update_board"),)
+    # policy_rules = (("iot", "iot:update_plugin"),)
 
     """
     def allowed(self, request, plugin):
-
-        # LOG.debug("MELO ALLOWED: %s %s %s", self, request, plugin)
-        # LOG.debug("MELO user: %s", request.user.id)
+        # LOG.debug("ALLOWED: %s %s %s", self, request, plugin)
+        # LOG.debug("user: %s", request.user.id)
 
         return True
     """
@@ -51,47 +50,47 @@ class EditPluginLink(tables.LinkAction):
 
 class InjectPluginLink(tables.LinkAction):
     name = "inject"
-    verbose_name = _("Inject")
+    verbose_name = _("Inject Plugin")
     url = "horizon:admin:plugins:inject"
     classes = ("ajax-modal",)
     icon = "plus"
-    # policy_rules = (("iot", "iot:create_board"),)
+    # policy_rules = (("iot", "iot:inject_plugin"),)
 
 
 class StartPluginLink(tables.LinkAction):
     name = "start"
-    verbose_name = _("Start")
+    verbose_name = _("Start Plugin")
     url = "horizon:admin:plugins:start"
     classes = ("ajax-modal",)
     icon = "plus"
-    # policy_rules = (("iot", "iot:create_board"),)
+    # policy_rules = (("iot", "iot:start_plugin"),)
 
 
 class StopPluginLink(tables.LinkAction):
     name = "stop"
-    verbose_name = _("Stop")
+    verbose_name = _("Stop Plugin")
     url = "horizon:admin:plugins:stop"
     classes = ("ajax-modal",)
     icon = "plus"
-    # policy_rules = (("iot", "iot:create_board"),)
+    # policy_rules = (("iot", "iot:stop_plugin"),)
 
 
 class CallPluginLink(tables.LinkAction):
     name = "call"
-    verbose_name = _("Call")
+    verbose_name = _("Call Plugin")
     url = "horizon:admin:plugins:call"
     classes = ("ajax-modal",)
     icon = "plus"
-    # policy_rules = (("iot", "iot:create_board"),)
+    # policy_rules = (("iot", "iot:call_plugin"),)
 
 
 class RemovePluginLink(tables.LinkAction):
     name = "remove"
-    verbose_name = _("Remove from board(s)")
+    verbose_name = _("Remove Plugin from board(s)")
     url = "horizon:admin:plugins:remove"
     classes = ("ajax-modal",)
     icon = "plus"
-    # policy_rules = (("iot", "iot:create_board"),)
+    # policy_rules = (("iot", "iot:remove_plugin"),)
 
 
 class DeletePluginsAction(tables.DeleteAction):
@@ -110,7 +109,7 @@ class DeletePluginsAction(tables.DeleteAction):
             u"Deleted Plugins",
             count
         )
-    # policy_rules = (("iot", "iot:delete_board"),)
+    # policy_rules = (("iot", "iot:delete_plugin"),)
 
     """
     def allowed(self, request, role):
@@ -141,14 +140,14 @@ class PluginsTable(tables.DataTable):
     # Overriding get_object_id method because in IoT service the "id" is
     # identified by the field UUID
     def get_object_id(self, datum):
-        # LOG.debug("MELO datum %s", datum)
+        # LOG.debug("datum %s", datum)
         return datum.uuid
 
     # Overriding get_row_actions method because we need to discriminate
     # between Sync and Async plugins
     def get_row_actions(self, datum):
         actions = super(PluginsTable, self).get_row_actions(datum)
-        # LOG.debug("MELO ACTIONS: %s %s", actions[0].name, datum.name)
+        # LOG.debug("ACTIONS: %s %s", actions[0].name, datum.name)
 
         selected_row_actions = []
 
@@ -171,7 +170,7 @@ class PluginsTable(tables.DataTable):
         verbose_name = _("plugins")
 
         row_actions = (EditPluginLink, InjectPluginLink, StartPluginLink,
-                       StopPluginLink, CallPluginLink,
-                       RemovePluginLink, DeletePluginsAction,)
+                       StopPluginLink, CallPluginLink, RemovePluginLink,
+                       DeletePluginsAction,)
         table_actions = (PluginFilterAction, CreatePluginLink,
                          DeletePluginsAction)

@@ -12,13 +12,13 @@
 
 import logging
 
+from django import template
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import ungettext_lazy
 
 from horizon import tables
 
 from openstack_dashboard import api
-from openstack_dashboard import policy
 
 LOG = logging.getLogger(__name__)
 
@@ -44,6 +44,24 @@ class EditBoardLink(tables.LinkAction):
     def allowed(self, request, role):
         return api.keystone.keystone_can_edit_role()
     """
+
+
+class RestoreServices(tables.BatchAction):
+    name = "restoreservices"
+
+    @staticmethod
+    def action_present(count):
+        return u"Restore Services"
+
+    @staticmethod
+    def action_past(count):
+        return u"Restore Services"
+
+    def allowed(self, request, board=None):
+        return True
+
+    def action(self, request, board_id):
+        api.iotronic.restore_services(request, board_id)
 
 
 class RemovePluginsLink(tables.LinkAction):
@@ -99,6 +117,13 @@ class BoardFilterAction(tables.FilterAction):
         return [board for board in boards
                 if q in board.name.lower()]
 
+def show_services(board_info):
+    template_name = 'project/boards/_cell_services.html'
+    context = board_info._info
+    # LOG.debug("CONTEXT: %s", context)
+    return template.loader.render_to_string(template_name,
+                                            context)
+
 
 class BoardsTable(tables.DataTable):
     name = tables.WrappingColumn('name', link="horizon:project:boards:detail",
@@ -108,7 +133,8 @@ class BoardsTable(tables.DataTable):
     uuid = tables.Column('uuid', verbose_name=_('Board ID'))
     # code = tables.Column('code', verbose_name=_('Code'))
     status = tables.Column('status', verbose_name=_('Status'))
-    location = tables.Column('location', verbose_name=_('Geo'))
+    # location = tables.Column('location', verbose_name=_('Geo'))
+    services = tables.Column(show_services, verbose_name=_('Services'))
     # extra = tables.Column('extra', verbose_name=_('Extra'))
 
     # Overriding get_object_id method because in IoT service the "id" is
@@ -116,32 +142,10 @@ class BoardsTable(tables.DataTable):
     def get_object_id(self, datum):
         return datum.uuid
 
-    # Overriding get_row_actions method because we need to discriminate
-    # between user_iot and other users
-    def get_row_actions(self, datum):
-        actions = super(BoardsTable, self).get_row_actions(datum)
-
-        selected_row_actions = []
-        if not policy.check((("iot", "iot_user"),), self.request):
-            selected_row_actions = actions
-
-        return selected_row_actions
-
-    # Overriding get_table_actions method because we need to discriminate
-    # between user_iot and other users
-    def get_table_actions(self):
-        actions = super(BoardsTable, self).get_table_actions()
-
-        selected_table_actions = []
-        if not policy.check((("iot", "iot_user"),), self.request):
-            selected_table_actions = actions
-
-        return selected_table_actions
-
     class Meta(object):
         name = "boards"
         verbose_name = _("boards")
-
-        row_actions = (EditBoardLink, RemovePluginsLink, DeleteBoardsAction)
-        table_actions = (BoardFilterAction, CreateBoardLink,
-                         DeleteBoardsAction)
+        row_actions = (EditBoardLink, RestoreServices, 
+                       RemovePluginsLink, DeleteBoardsAction)
+        table_actions = (BoardFilterAction, CreateBoardLink, 
+                         RestoreServices, DeleteBoardsAction)

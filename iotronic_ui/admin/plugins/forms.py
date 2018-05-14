@@ -68,21 +68,18 @@ class CreatePluginForm(forms.SelfHandlingForm):
             data["parameters"] = json.loads(data["parameters"])
 
         try:
-            plugin = iotronic.plugin_create(request,
-                                            data["name"],
-                                            data["public"],
-                                            data["callable"],
-                                            data["code"],
-                                            data["parameters"])
-            LOG.debug("MELO API REQ: %s", request)
+            plugin = iotronic.plugin_create(request, data["name"],
+                                            data["public"], data["callable"],
+                                            data["code"], data["parameters"])
+            LOG.debug("API REQ: %s", request)
 
             messages.success(request, _("Plugin created successfully."))
 
             return plugin
         # except iot_exceptions.ClientException:
         except Exception:
-            # LOG.debug("MELO API REQ EXC: %s", request)
-            # LOG.debug("MELO API REQ (DICT): %s", exceptions.__dict__)
+            # LOG.debug("API REQ EXC: %s", request)
+            # LOG.debug("API REQ (DICT): %s", exceptions.__dict__)
             exceptions.handle(request, _('Unable to create plugin.'))
 
 
@@ -127,9 +124,9 @@ class InjectPluginForm(forms.SelfHandlingForm):
                         plugin = iotronic.plugin_inject(request, key,
                                                         data["uuid"],
                                                         data["onboot"])
-                        # LOG.debug("MELO API: %s %s", plugin, request)
-                        message_text = "Plugin injected successfully on \
-                                       board " + str(value) + "."
+                        # LOG.debug("API: %s %s", plugin, request)
+                        message_text = "Plugin injected successfully on " \
+                                       "board " + str(value) + "."
                         messages.success(request, _(message_text))
 
                         if counter != len(data["board_list"]) - 1:
@@ -156,7 +153,8 @@ class StartPluginForm(forms.SelfHandlingForm):
     board_list = forms.MultipleChoiceField(
         label=_("Boards List"),
         widget=forms.SelectMultiple(
-            attrs={'class': 'switchable', 'data-slug': 'slug-start-boards'}),
+            attrs={'class': 'switchable',
+                   'data-slug': 'slug-start-boards'}),
         help_text=_("Select boards in this pool ")
     )
 
@@ -198,9 +196,9 @@ class StartPluginForm(forms.SelfHandlingForm):
                                                         data["uuid"],
                                                         "PluginStart",
                                                         data["parameters"])
-                        # LOG.debug("MELO API: %s %s", plugin, request)
-                        message_text = "Plugin started successfully on \
-                                       board " + str(value) + "."
+                        # LOG.debug("API: %s %s", plugin, request)
+                        message_text = "Plugin started successfully on board "\
+                                       + str(value) + "."
                         messages.success(request, _(message_text))
 
                         if counter != len(data["board_list"]) - 1:
@@ -266,9 +264,9 @@ class StopPluginForm(forms.SelfHandlingForm):
                                                         data["uuid"],
                                                         "PluginStop",
                                                         data["delay"])
-                        # LOG.debug("MELO API: %s %s", plugin, request)
-                        message_text = "Plugin stopped successfully on \
-                                       board " + str(value) + "."
+                        # LOG.debug("API: %s %s", plugin, request)
+                        message_text = "Plugin stopped successfully on board "\
+                                       + str(value) + "."
                         messages.success(request, _(message_text))
 
                         if counter != len(data["board_list"]) - 1:
@@ -337,13 +335,13 @@ class CallPluginForm(forms.SelfHandlingForm):
                                                         data["uuid"],
                                                         "PluginCall",
                                                         data["parameters"])
-                        # LOG.debug("MELO API: %s %s", plugin, request)
-                        message_text = "Plugin called successfully on \
-                                       board " + str(value) + "."
+                        # LOG.debug("API: %s %s", plugin, request)
+                        message_text = "Plugin called successfully on board " \
+                                       + str(value) + "."
                         messages.success(request, _(message_text))
 
                         if counter != len(data["board_list"]) - 1:
-                            counter += 1
+                            counter += 2
                         else:
                             return plugin
                     except Exception:
@@ -392,9 +390,9 @@ class RemovePluginForm(forms.SelfHandlingForm):
                         plugin = None
                         plugin = iotronic.plugin_remove(request, key,
                                                         data["uuid"])
-                        # LOG.debug("MELO API: %s %s", plugin, request)
-                        message_text = "Plugin removed successfully from \
-                                       board " + str(value) + "."
+                        # LOG.debug("API: %s %s", plugin, request)
+                        message_text = "Plugin removed successfully from" \
+                                       + " board " + str(value) + "."
                         messages.success(request, _(message_text))
 
                         if counter != len(data["board_list"]) - 1:
@@ -456,36 +454,34 @@ class UpdatePluginForm(forms.SelfHandlingForm):
 
         # Admin
         if policy.check((("iot", "iot:update_plugins"),), self.request):
-            # LOG.debug("MELO ADMIN")
+            # LOG.debug("ADMIN")
             pass
 
         # Admin_iot_project
         elif policy.check((("iot", "iot:update_project_plugins"),),
                           self.request):
-            # LOG.debug("MELO IOT ADMIN")
+            # LOG.debug("IOT ADMIN")
 
             if self.request.user.id != kwargs["initial"]["owner"]:
-                # LOG.debug("MELO NO-edit IOT ADMIN")
+                # LOG.debug("NO-edit IOT ADMIN")
                 self.fields["name"].widget.attrs = {'readonly': 'readonly'}
                 self.fields["public"].widget.attrs = {'disabled': 'disabled'}
-                self.fields["callable"].widget.attrs = {'disabled':
-                                                        'disabled'}
+                self.fields["callable"].widget.attrs = {'disabled': 'disabled'}
                 self.fields["code"].widget.attrs = {'readonly': 'readonly'}
 
         # Other users
         else:
             if self.request.user.id != kwargs["initial"]["owner"]:
-                # LOG.debug("MELO IMMUTABLE FIELDS")
+                # LOG.debug("IMMUTABLE FIELDS")
                 self.fields["name"].widget.attrs = {'readonly': 'readonly'}
                 self.fields["public"].widget.attrs = {'disabled': 'disabled'}
-                self.fields["callable"].widget.attrs = {'disabled':
-                                                        'disabled'}
+                self.fields["callable"].widget.attrs = {'disabled': 'disabled'}
                 self.fields["code"].widget.attrs = {'readonly': 'readonly'}
 
     def handle(self, request, data):
         try:
 
-            # LOG.debug("MELO DATA: %s", data)
+            # LOG.debug("DATA: %s", data)
             data["code"] = cPickle.dumps(str(data["code"]))
 
             iotronic.plugin_update(request, data["uuid"],

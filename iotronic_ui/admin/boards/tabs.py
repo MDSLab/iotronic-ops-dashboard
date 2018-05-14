@@ -15,15 +15,13 @@ import logging
 # from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
-# from horizon import exceptions
-from horizon import messages
 from horizon import tabs
 
 LOG = logging.getLogger(__name__)
 
 """
 import inspect
-LOG.debug('MELO CLASSES: %s',
+LOG.debug('CLASSES: %s',
           inspect.getmembers(tabs, predicate=inspect.isclass))
 """
 
@@ -34,24 +32,14 @@ class OverviewTab(tabs.Tab):
     template_name = ("admin/boards/_detail_overview.html")
 
     def get_context_data(self, request):
-        # FROM
-        """
-        return {"board": self.tab_group.kwargs['board'],
-                "is_superuser": request.user.is_superuser}
-        """
-        # TO
-        plugins = []
-        try:
-            plugins = self.tab_group.kwargs['board']._info['plugins']
 
-        except Exception:
-            msg = ('No plugins injected in the board')
-            messages.warning(self.request, msg)
-
-        location = self.tab_group.kwargs['board']._info['location'][0]
+        coordinates = self.tab_group.kwargs['board'].__dict__['location'][0]
+        services = self.tab_group.kwargs['board']._info['services']
+        plugins = self.tab_group.kwargs['board']._info['plugins']
 
         return {"board": self.tab_group.kwargs['board'],
-                "location": location,
+                "coordinates": coordinates,
+                "services": services,
                 "plugins": plugins,
                 "is_superuser": request.user.is_superuser}
 

@@ -18,7 +18,6 @@ from django.utils.translation import ungettext_lazy
 from horizon import tables
 
 from openstack_dashboard import api
-from openstack_dashboard import policy
 
 LOG = logging.getLogger(__name__)
 
@@ -29,7 +28,7 @@ class CreatePluginLink(tables.LinkAction):
     url = "horizon:project:plugins:create"
     classes = ("ajax-modal",)
     icon = "plus"
-    # policy_rules = (("iot", "iot:create_board"),)
+    # policy_rules = (("iot", "iot:create_plugin"),)
 
 
 class EditPluginLink(tables.LinkAction):
@@ -38,13 +37,12 @@ class EditPluginLink(tables.LinkAction):
     url = "horizon:project:plugins:update"
     classes = ("ajax-modal",)
     icon = "pencil"
-    # policy_rules = (("iot", "iot:update_board"),)
+    # policy_rules = (("iot", "iot:update_plugin"),)
 
     """
     def allowed(self, request, plugin):
-
-        # LOG.debug("MELO ALLOWED: %s %s %s", self, request, plugin)
-        # LOG.debug("MELO user: %s", request.user.id)
+        # LOG.debug("ALLOWED: %s %s %s", self, request, plugin)
+        # LOG.debug("user: %s", request.user.id)
 
         return True
     """
@@ -52,47 +50,47 @@ class EditPluginLink(tables.LinkAction):
 
 class InjectPluginLink(tables.LinkAction):
     name = "inject"
-    verbose_name = _("Inject")
+    verbose_name = _("Inject Plugin")
     url = "horizon:project:plugins:inject"
     classes = ("ajax-modal",)
     icon = "plus"
-    # policy_rules = (("iot", "iot:create_board"),)
+    # policy_rules = (("iot", "iot:inject_plugin"),)
 
 
 class StartPluginLink(tables.LinkAction):
     name = "start"
-    verbose_name = _("Start")
+    verbose_name = _("Start Plugin")
     url = "horizon:project:plugins:start"
     classes = ("ajax-modal",)
     icon = "plus"
-    # policy_rules = (("iot", "iot:create_board"),)
+    # policy_rules = (("iot", "iot:start_plugin"),)
 
 
 class StopPluginLink(tables.LinkAction):
     name = "stop"
-    verbose_name = _("Stop")
+    verbose_name = _("Stop Plugin")
     url = "horizon:project:plugins:stop"
     classes = ("ajax-modal",)
     icon = "plus"
-    # policy_rules = (("iot", "iot:create_board"),)
+    # policy_rules = (("iot", "iot:stop_plugin"),)
 
 
 class CallPluginLink(tables.LinkAction):
     name = "call"
-    verbose_name = _("Call")
+    verbose_name = _("Call Plugin")
     url = "horizon:project:plugins:call"
     classes = ("ajax-modal",)
     icon = "plus"
-    # policy_rules = (("iot", "iot:create_board"),)
+    # policy_rules = (("iot", "iot:call_plugin"),)
 
 
 class RemovePluginLink(tables.LinkAction):
     name = "remove"
-    verbose_name = _("Remove from board(s)")
+    verbose_name = _("Remove Plugin from board(s)")
     url = "horizon:project:plugins:remove"
     classes = ("ajax-modal",)
     icon = "plus"
-    # policy_rules = (("iot", "iot:create_board"),)
+    # policy_rules = (("iot", "iot:remove_plugin"),)
 
 
 class DeletePluginsAction(tables.DeleteAction):
@@ -111,7 +109,7 @@ class DeletePluginsAction(tables.DeleteAction):
             u"Deleted Plugins",
             count
         )
-    # policy_rules = (("iot", "iot:delete_board"),)
+    # policy_rules = (("iot", "iot:delete_plugin"),)
 
     """
     def allowed(self, request, role):
@@ -142,46 +140,30 @@ class PluginsTable(tables.DataTable):
     # Overriding get_object_id method because in IoT service the "id" is
     # identified by the field UUID
     def get_object_id(self, datum):
-        # LOG.debug("MELO datum %s", datum)
+        # LOG.debug("datum %s", datum)
         return datum.uuid
 
     # Overriding get_row_actions method because we need to discriminate
     # between Sync and Async plugins
     def get_row_actions(self, datum):
         actions = super(PluginsTable, self).get_row_actions(datum)
+        # LOG.debug("ACTIONS: %s %s", actions[0].name, datum.name)
 
         selected_row_actions = []
-        if not policy.check((("iot", "iot_user"),), self.request):
 
-            common_actions = ["edit", "inject", "remove"]
-            sync_actions = ["call"]
-            async_actions = ["start", "stop"]
+        common_actions = ["edit", "inject", "remove", "delete"]
 
-            for action in actions:
-                if action.name in common_actions:
-                    selected_row_actions.append(action)
+        for action in actions:
+            if action.name in common_actions:
+                selected_row_actions.append(action)
 
-                elif datum.callable == True and action.name in sync_actions:
-                    selected_row_actions.append(action)
+            elif datum.callable == True and action.name == "call":
+                selected_row_actions.append(action)
 
-                elif datum.callable == False and action.name in async_actions:
-                    selected_row_actions.append(action)
-
-                elif datum.public == False and action.name == "delete":
-                    selected_row_actions.append(action)
+            elif datum.callable == False and action.name != "call":
+                selected_row_actions.append(action)
 
         return selected_row_actions
-
-    # Overriding get_table_actions method because we need to discriminate
-    # between user_iot and other users
-    def get_table_actions(self):
-        actions = super(PluginsTable, self).get_table_actions()
-
-        selected_table_actions = []
-        if not policy.check((("iot", "iot_user"),), self.request):
-            selected_table_actions = actions
-
-        return selected_table_actions
 
     class Meta(object):
         name = "plugins"

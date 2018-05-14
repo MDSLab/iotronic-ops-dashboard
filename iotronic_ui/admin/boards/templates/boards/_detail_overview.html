@@ -14,27 +14,54 @@
     <dd>{{ board.code }}</dd>
     <dt>{% trans "Creation data" %}</dt>
     <dd>{{ board.created_at }}</dd>
-
-
-    <dt>{% trans "Latitude" %}</dt>
-    <dd>{{ location.latitude }}</dd>
-    <dt>{% trans "Longitude" %}</dt>
-    <dd>{{ location.longitude }}</dd>
-    <dt>{% trans "Altitude" %}</dt>
-    <dd>{{ location.altitude }}</dd>
-
-
+    <dt>{% trans "Location" %}</dt>
+    <dd>Latitude: {{ coordinates.latitude }}</dd>
+    <dd>Longitude: {{ coordinates.longitude }}</dd>
+    <dd>Altitude: {{ coordinates.altitude }}</dd>
     <dt>{% trans "Mobile" %}</dt>
     <dd>{{ board.mobile }}</dd>
     <dt>{% trans "Extra" %}</dt>
     <dd>{{ board.extra }}</dd>
-
-
+    <dt>{% trans "Services" %}</dt>
+    {% if services %}
+        {% for service in services %}
+            <dd>{{ service.name }} [{{ service.protocol }}] {{ service.port }} --> {{ service.public_port }}</dd>
+        {% endfor %}
+    {% else %}
+        <dd>--</dd>
+    {% endif %}
+    <dt>{% trans "Plugins" %}</dt>
     {% if plugins %}
-        <dt>{% trans "Plugins" %}</dt>
         {% for plugin in plugins %}
             <dd>{{ plugin.name }}</dd>
         {% endfor %}
+    {% else %}
+        <dd>--</dd>
     {% endif %}
   </dl>
 </div>
+
+<!--<div id="mapdiv" style="min-height:300px; margin-bottom: 10px;" data-coordinates='[{"latitude": "{{ coordinates.latitude }}", "longitude": "{{ coordinates.longitude }}", "altitude": "{{ coordinates.altitude }}"}]'>-->
+<div id="mapdiv" style="min-height:300px; margin-bottom: 10px;">
+	<script>
+		$(document).ready(function(){
+			/*
+			coordinates = JSON.parse(document.getElementById("mapdiv").getAttribute("data-coordinates"));
+			lat = coordinates[0]["latitude"];
+			lon = coordinates[0]["longitude"];
+			alt = coordinates[0]["altitude"];
+			*/
+			var lat = "{{ coordinates.latitude }}";
+			var lon = "{{ coordinates.longitude }}";
+			var alt = "{{ coordinates.altitude }}";
+			var label = "{{ board.name }}";
+			var status = "{{ board.status }}";
+			var updated = "{{ board.updated_at }}";
+
+			var array_coord = {"coordinates" : [{"lat": lat, "lon": lon, "alt": alt, "updated": updated, "label": label, "status": status}]}
+
+			render_map("mapdiv", array_coord);
+		});
+	</script>
+</div>
+
