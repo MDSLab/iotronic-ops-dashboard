@@ -159,11 +159,7 @@ class RemovePluginsForm(forms.SelfHandlingForm):
 
         super(RemovePluginsForm, self).__init__(*args, **kwargs)
         # input=kwargs.get('initial',{})
-
-        boardslist_length = len(kwargs["initial"]["board_list"])
-
         self.fields["plugin_list"].choices = kwargs["initial"]["plugin_list"]
-        self.fields["plugin_list"].max_length = boardslist_length
 
     def handle(self, request, data):
 
@@ -176,11 +172,9 @@ class RemovePluginsForm(forms.SelfHandlingForm):
                     try:
                         board = None
 
-                        # LOG.debug('INJECT: %s %s', plugin, value)
-                        # board = iotronic.plugin_create(request, data["name"],
-                        #                                data["public"],
-                        #                                data["callable"],
-                        #                                data["code"])
+                        board = iotronic.plugin_remove(request, data["uuid"],
+                                                       key)
+
                         message_text = "Plugin " + str(value) + \
                                        " removed successfully."
                         messages.success(request, _(message_text))
