@@ -71,7 +71,9 @@ class IndexView(tables.DataTableView):
                                   _('Unable to retrieve user boards list.'))
 
         for board in boards:
-            board_services = api.iotronic.services_on_board(self.request, board.uuid, True)
+            board_services = api.iotronic.services_on_board(self.request,
+                                                            board.uuid,
+                                                            True)
 
             # board.__dict__.update(dict(services=board_services))
             board._info.update(dict(services=board_services))
@@ -102,8 +104,9 @@ class UpdateView(forms.ModalFormView):
     @memoized.memoized_method
     def get_object(self):
         try:
-            return api.iotronic.board_get(self.request, self.kwargs['board_id'],
-                                      None)
+            return api.iotronic.board_get(self.request,
+                                          self.kwargs['board_id'],
+                                          None)
         except Exception:
             redirect = reverse("horizon:iot:boards:index")
             exceptions.handle(self.request,
@@ -143,7 +146,8 @@ class EnableServiceView(forms.ModalFormView):
     @memoized.memoized_method
     def get_object(self):
         try:
-            return api.iotronic.board_get(self.request, self.kwargs['board_id'],
+            return api.iotronic.board_get(self.request,
+                                          self.kwargs['board_id'],
                                           None)
 
         except Exception:
@@ -162,9 +166,9 @@ class EnableServiceView(forms.ModalFormView):
         board = self.get_object()
 
         # Populate available services
-        cloud_services = api.iotronic.service_list(self.request, None) 
-        board_services = api.iotronic.services_on_board(self.request, \
-                                                        self.kwargs['board_id'], \
+        cloud_services = api.iotronic.service_list(self.request, None)
+        board_services = api.iotronic.services_on_board(self.request,
+                                                        board.uuid,
                                                         True)
 
         service_list = []
@@ -172,8 +176,8 @@ class EnableServiceView(forms.ModalFormView):
         for cloud_service in cloud_services:
 
             if len(board_services) == 0:
-                service_list.append((cloud_service._info["uuid"], \
-                                     _(cloud_service._info["name"])))
+                service_list.append((cloud_service._info["uuid"],
+                                    _(cloud_service._info["name"])))
             else:
                 counter = 0
                 for board_service in board_services:
@@ -182,9 +186,8 @@ class EnableServiceView(forms.ModalFormView):
                     elif counter != len(board_services) - 1:
                         counter += 1
                     else:
-                        service_list.append((cloud_service._info["uuid"], \
-                                             _(cloud_service._info["name"])))
-
+                        service_list.append((cloud_service._info["uuid"],
+                                            _(cloud_service._info["name"])))
 
         return {'uuid': board.uuid,
                 'name': board.name,
@@ -205,7 +208,8 @@ class DisableServiceView(forms.ModalFormView):
     @memoized.memoized_method
     def get_object(self):
         try:
-            return api.iotronic.board_get(self.request, self.kwargs['board_id'],
+            return api.iotronic.board_get(self.request,
+                                          self.kwargs['board_id'],
                                           None)
 
         except Exception:
@@ -225,8 +229,8 @@ class DisableServiceView(forms.ModalFormView):
 
         # Populate available services
         cloud_services = api.iotronic.service_list(self.request, None)
-        board_services = api.iotronic.services_on_board(self.request, \
-                                                        self.kwargs['board_id'], \
+        board_services = api.iotronic.services_on_board(self.request,
+                                                        board.uuid,
                                                         True)
 
         service_list = []
@@ -234,8 +238,8 @@ class DisableServiceView(forms.ModalFormView):
         for cloud_service in cloud_services:
             for board_service in board_services:
                 if board_service["uuid"] == cloud_service._info["uuid"]:
-                     service_list.append((cloud_service._info["uuid"], \
-                                         _(cloud_service._info["name"])))
+                    service_list.append((cloud_service._info["uuid"],
+                                        _(cloud_service._info["name"])))
 
         return {'uuid': board.uuid,
                 'name': board.name,
@@ -256,8 +260,9 @@ class AttachPortView(forms.ModalFormView):
     @memoized.memoized_method
     def get_object(self):
         try:
-            return api.iotronic.board_get(self.request, self.kwargs['board_id'],
-                                      None)
+            return api.iotronic.board_get(self.request,
+                                          self.kwargs['board_id'],
+                                          None)
         except Exception:
             redirect = reverse("horizon:iot:boards:index")
             exceptions.handle(self.request,
@@ -301,8 +306,9 @@ class DetachPortView(forms.ModalFormView):
     @memoized.memoized_method
     def get_object(self):
         try:
-            return api.iotronic.board_get(self.request, self.kwargs['board_id'],
-                                      None)
+            return api.iotronic.board_get(self.request,
+                                          self.kwargs['board_id'],
+                                          None)
         except Exception:
             redirect = reverse("horizon:iot:boards:index")
             exceptions.handle(self.request,
@@ -320,17 +326,19 @@ class DetachPortView(forms.ModalFormView):
 
         ports = api.iotronic.port_list(self.request, board.uuid)
 
-        # TO BE REMOVED (change it once the port_list per board is completed and tested !
-        # ################################################################################
+        # TO BE REMOVED (change it once the port_list per board is
+        # completed and tested !
+        # ################################################################
         # LOG.debug("PORTS: %s", ports)
 
         filtered_ports = []
         for port in ports:
             if port._info["board_uuid"] == board.uuid:
-                filtered_ports.append((port._info["uuid"], _(port._info["ip"])))
+                filtered_ports.append((port._info["uuid"],
+                                      _(port._info["ip"])))
 
         ports = filtered_ports
-        # ################################################################################
+        # ################################################################
 
         # Populate board ports
         return {'uuid': board.uuid,
@@ -352,8 +360,9 @@ class RemovePluginsView(forms.ModalFormView):
     @memoized.memoized_method
     def get_object(self):
         try:
-            return api.iotronic.board_get(self.request, self.kwargs['board_id'],
-                                      None)
+            return api.iotronic.board_get(self.request,
+                                          self.kwargs['board_id'],
+                                          None)
         except Exception:
             redirect = reverse("horizon:iot:boards:index")
             exceptions.handle(self.request,
@@ -399,8 +408,9 @@ class RemoveServicesView(forms.ModalFormView):
     @memoized.memoized_method
     def get_object(self):
         try:
-            return api.iotronic.board_get(self.request, self.kwargs['board_id'],
-                                      None)
+            return api.iotronic.board_get(self.request,
+                                          self.kwargs['board_id'],
+                                          None)
         except Exception:
             redirect = reverse("horizon:iot:boards:index")
             exceptions.handle(self.request,
@@ -417,7 +427,9 @@ class RemoveServicesView(forms.ModalFormView):
         board = self.get_object()
 
         # Populate services
-        services = api.iotronic.services_on_board(self.request, board.uuid, True)
+        services = api.iotronic.services_on_board(self.request,
+                                                  board.uuid,
+                                                  True)
         services.sort(key=lambda b: b["name"])
 
         service_list = []
@@ -467,11 +479,11 @@ class DetailView(tabs.TabView):
             board._info.update(dict(ports=board_ports))
             # #################################################################
 
-            board_services = api.iotronic.services_on_board(self.request, \
+            board_services = api.iotronic.services_on_board(self.request,
                                                             board_id, True)
             board._info.update(dict(services=board_services))
 
-            board_plugins = api.iotronic.plugins_on_board(self.request, \
+            board_plugins = api.iotronic.plugins_on_board(self.request,
                                                           board_id)
             board._info.update(dict(plugins=board_plugins))
 

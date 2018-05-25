@@ -68,8 +68,8 @@ class CreateBoardForm(forms.SelfHandlingForm):
                                  "altitude": str(data["altitude"])}]
 
             iotronic.board_create(request, data["code"],
-                                          data["mobile"], data["location"],
-                                          data["type"], data["name"])
+                                  data["mobile"], data["location"],
+                                  data["type"], data["name"])
 
             messages.success(request, _("Board created successfully."))
             return True
@@ -161,7 +161,8 @@ class EnableServiceForm(forms.SelfHandlingForm):
     service_list = forms.MultipleChoiceField(
         label=_("Services List"),
         widget=forms.SelectMultiple(
-            attrs={'class': 'switchable', 'data-slug': 'slug-select-services'}),
+            attrs={'class': 'switchable',
+                   'data-slug': 'slug-select-services'}),
         help_text=_("Add available services from this pool")
     )
 
@@ -174,9 +175,8 @@ class EnableServiceForm(forms.SelfHandlingForm):
         counter = 0
         for service in data["service_list"]:
             try:
-                action = iotronic.service_action(request, data["uuid"], \
-                                                 service, \
-                                                 "ServiceEnable")
+                action = iotronic.service_action(request, data["uuid"],
+                                                 service, "ServiceEnable")
 
                 # message_text = "Service(s) enabled successfully."
                 message_text = action
@@ -204,7 +204,8 @@ class DisableServiceForm(forms.SelfHandlingForm):
     service_list = forms.MultipleChoiceField(
         label=_("Services List"),
         widget=forms.SelectMultiple(
-            attrs={'class': 'switchable', 'data-slug': 'slug-select-services'}),
+            attrs={'class': 'switchable',
+                   'data-slug': 'slug-select-services'}),
         help_text=_("Select services to disable from this pool")
     )
 
@@ -217,9 +218,8 @@ class DisableServiceForm(forms.SelfHandlingForm):
         counter = 0
         for service in data["service_list"]:
             try:
-                action = iotronic.service_action(request, data["uuid"], \
-                                                 service, \
-                                                 "ServiceDisable")
+                action = iotronic.service_action(request, data["uuid"],
+                                                 service, "ServiceDisable")
 
                 # message_text = "Service(s) disabled successfully."
                 message_text = action
@@ -252,7 +252,9 @@ class AttachPortForm(forms.SelfHandlingForm):
     def __init__(self, *args, **kwargs):
 
         super(AttachPortForm, self).__init__(*args, **kwargs)
-        self.fields["networks_list"].choices = kwargs["initial"]["networks_list"]
+
+        net_choices = kwargs["initial"]["networks_list"]
+        self.fields["networks_list"].choices = net_choices
 
     def handle(self, request, data):
         array = data["networks_list"].split(':')
@@ -261,10 +263,10 @@ class AttachPortForm(forms.SelfHandlingForm):
         subnet_id = array[1]
 
         try:
-            attach = iotronic.attach_port(request, data["uuid"], \
+            attach = iotronic.attach_port(request, data["uuid"],
                                           network_id, subnet_id)
 
-            LOG.debug("ATTACH: %s", attach)
+            # LOG.debug("ATTACH: %s", attach)
             ip = attach._info["ip"]
 
             message_text = "Attached  port to ip " + str(ip) + \
@@ -388,7 +390,8 @@ class RemoveServicesForm(forms.SelfHandlingForm):
     service_list = forms.MultipleChoiceField(
         label=_("Services List"),
         widget=forms.SelectMultiple(
-            attrs={'class': 'switchable', 'data-slug': 'slug-remove-services'}),
+            attrs={'class': 'switchable',
+                   'data-slug': 'slug-remove-services'}),
         help_text=_("Select services in this pool")
     )
 
@@ -407,8 +410,10 @@ class RemoveServicesForm(forms.SelfHandlingForm):
                 if key == service:
 
                     try:
-                        disable = iotronic.service_action(request, data["uuid"], \
-                                                key, "ServiceDisable")
+                        disable = iotronic.service_action(request,
+                                                          data["uuid"],
+                                                          key,
+                                                          "ServiceDisable")
 
                         message_text = disable
                         messages.success(request, _(message_text))

@@ -52,7 +52,8 @@ class IndexView(tables.DataTableView):
                                   _('Unable to retrieve services list.'))
 
         # Admin_iot_project
-        elif policy.check((("iot", "iot:list_project_services"),), self.request):
+        elif policy.check((("iot", "iot:list_project_services"),),
+                          self.request):
             try:
                 services = iotronic.service_list(self.request, None)
 
@@ -96,8 +97,9 @@ class UpdateView(forms.ModalFormView):
     @memoized.memoized_method
     def get_object(self):
         try:
-            return iotronic.service_get(self.request, self.kwargs['service_id'],
-                                      None)
+            return iotronic.service_get(self.request,
+                                        self.kwargs['service_id'],
+                                        None)
         except Exception:
             redirect = reverse("horizon:iot:services:index")
             exceptions.handle(self.request,
@@ -133,8 +135,9 @@ class ActionView(forms.ModalFormView):
     @memoized.memoized_method
     def get_object(self):
         try:
-            return iotronic.service_get(self.request, self.kwargs['service_id'],
-                                       None)
+            return iotronic.service_get(self.request,
+                                        self.kwargs['service_id'],
+                                        None)
         except Exception:
             redirect = reverse("horizon:iot:services:index")
             exceptions.handle(self.request,
@@ -187,8 +190,8 @@ class DetailView(tabs.TabView):
         try:
             service = iotronic.service_get(self.request, service_id, None)
         except Exception:
-            msg = ('Unable to retrieve service %s information') % {'name':
-                                                                 service.name}
+            s = service.name
+            msg = ('Unable to retrieve service %s information') % {'name': s}
             exceptions.handle(self.request, msg, ignore=True)
         return service
 

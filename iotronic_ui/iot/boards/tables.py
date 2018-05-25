@@ -160,6 +160,7 @@ class BoardFilterAction(tables.FilterAction):
         return [board for board in boards
                 if q in board.name.lower()]
 
+
 def show_services(board_info):
     template_name = 'iot/boards/_cell_services.html'
     context = board_info._info
@@ -192,5 +193,5 @@ class BoardsTable(tables.DataTable):
                        RestoreServices, AttachPortLink, DetachPortLink,
                        RemovePluginsLink, RemoveServicesLink,
                        DeleteBoardsAction)
-        table_actions = (BoardFilterAction, CreateBoardLink, 
+        table_actions = (BoardFilterAction, CreateBoardLink,
                          DeleteBoardsAction)

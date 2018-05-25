@@ -22,7 +22,6 @@ from openstack_dashboard import api
 LOG = logging.getLogger(__name__)
 
 
-
 class CreateServiceLink(tables.LinkAction):
     name = "create"
     verbose_name = _("Create Service")
@@ -95,7 +94,7 @@ class ServicesTable(tables.DataTable):
     class Meta(object):
         name = "services"
         verbose_name = _("services")
-        row_actions = (EditServiceLink, ActionServiceLink, 
+        row_actions = (EditServiceLink, ActionServiceLink,
                        DeleteServicesAction)
         table_actions = (ServiceFilterAction, CreateServiceLink,
-                       DeleteServicesAction)
+                         DeleteServicesAction)

@@ -42,9 +42,9 @@ class CreateServiceForm(forms.SelfHandlingForm):
     def handle(self, request, data):
         try:
             iotronic.service_create(request, data["name"],
-                                          data["port"], data["protocol"])
+                                    data["port"], data["protocol"])
 
-            messages.success(request, _("Service " + str(data["name"]) + \
+            messages.success(request, _("Service " + str(data["name"]) +
                                         " created successfully."))
             return True
 
@@ -89,10 +89,10 @@ class UpdateServiceForm(forms.SelfHandlingForm):
 
     def handle(self, request, data):
         try:
-            service = iotronic.service_update(request, data["uuid"],
-                                  {"name": data["name"],
-                                   "port": data["port"],
-                                   "protocol": data["protocol"]})
+            iotronic.service_update(request, data["uuid"],
+                                    {"name": data["name"],
+                                     "port": data["port"],
+                                     "protocol": data["protocol"]})
 
             messages.success(request, _("Service updated successfully."))
             return True
@@ -119,7 +119,9 @@ class ServiceActionForm(forms.SelfHandlingForm):
 
     action = forms.ChoiceField(
         label=_("Action"),
-        choices=[('ServiceEnable', _('Enable')), ('ServiceDisable', _('Disable')), ('ServiceRestore', _('Restore'))],
+        choices=[('ServiceEnable', _('Enable')),
+                 ('ServiceDisable', _('Disable')),
+                 ('ServiceRestore', _('Restore'))],
         widget=forms.Select(
             attrs={'class': 'switchable', 'data-slug': 'slug-action'},
         )
@@ -142,12 +144,9 @@ class ServiceActionForm(forms.SelfHandlingForm):
 
                     try:
                         action = iotronic.service_action(request, key,
-                                                        data["uuid"],
-                                                        data["action"])
+                                                         data["uuid"],
+                                                         data["action"])
                         message_text = action
-
-                        # message_text = "Action executed successfully on " \
-                        #                "board " + str(value) + "."
                         messages.success(request, _(message_text))
 
                         if counter != len(data["board_list"]) - 1:

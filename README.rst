@@ -5,8 +5,7 @@ IoTronic Panels
 Iotronic plugin for the OpenStack Dashboard
 
 * Free software: Apache license
-* Source: http://git.openstack.org/cgit/openstack/iotronic_ui
-* Bugs: http://bugs.launchpad.net/None
+* Source: http://git.openstack.org/cgit/openstack/iotronic-ui
 
 Features
 --------
@@ -40,7 +39,7 @@ Check the Horizon Login page on your browser and you will see the new Dashboard 
 
 Extra info
 ----------
-If you want to enable logs for a better debug follow the following steps or just skip them::
+If you want to enable logs for a better debug follow the following steps or just skip them.::
 
     mkdir /var/log/horizon
     touch /var/log/horizon/horizon.log

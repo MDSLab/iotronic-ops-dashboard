@@ -68,9 +68,9 @@ class CreatePluginForm(forms.SelfHandlingForm):
             data["parameters"] = json.loads(data["parameters"])
 
         try:
-            plugin = iotronic.plugin_create(request, data["name"],
-                                            data["public"], data["callable"],
-                                            data["code"], data["parameters"])
+            iotronic.plugin_create(request, data["name"],
+                                   data["public"], data["callable"],
+                                   data["code"], data["parameters"])
 
             messages.success(request, _("Plugin created successfully."))
 
@@ -382,8 +382,9 @@ class RemovePluginForm(forms.SelfHandlingForm):
                 if key == board:
 
                     try:
-                        iotronic.plugin_remove(request, key,
-                                                        data["uuid"])
+                        iotronic.plugin_remove(request,
+                                               key,
+                                               data["uuid"])
                         # LOG.debug("API: %s %s", plugin, request)
                         message_text = "Plugin removed successfully from" \
                                        + " board " + str(value) + "."
@@ -457,7 +458,7 @@ class UpdatePluginForm(forms.SelfHandlingForm):
                                     "callable": data["callable"],
                                     "code": data["code"]})
 
-            messages.success(request, _("Plugin " +str(data["name"]) + \
+            messages.success(request, _("Plugin " + str(data["name"]) +
                                         " updated successfully."))
             return True
 
