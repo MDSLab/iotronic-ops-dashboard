@@ -40,7 +40,7 @@ Check the Horizon Login page on your browser and you will see the new Dashboard 
 
 Extra info
 ----------
-If you want to enable logs for a better debug follow the following steps or just skip them.::
+If you want to enable logs for a better debug follow the following steps or just skip them::
 
     mkdir /var/log/horizon
     touch /var/log/horizon/horizon.log
