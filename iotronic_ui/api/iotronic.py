@@ -60,20 +60,17 @@ def board_create(request, code, mobile, location, type, name):
               "location": location,
               "type": type,
               "name": name}
-    board = iotronicclient(request).board.create(**params)
-    return board
+    iotronicclient(request).board.create(**params)
 
 
 def board_update(request, board_id, patch):
     """Update board."""
-    board = iotronicclient(request).board.update(board_id, patch)
-    return board
+    iotronicclient(request).board.update(board_id, patch)
 
 
 def board_delete(request, board_id):
     """Delete board."""
-    board = iotronicclient(request).board.delete(board_id)
-    return board
+    iotronicclient(request).board.delete(board_id)
 
 
 # PLUGIN MANAGEMENT (Cloud Side)
@@ -99,14 +96,12 @@ def plugin_create(request, name, public, callable, code, parameters):
               "callable": callable,
               "code": code,
               "parameters": parameters}
-    plugin = iotronicclient(request).plugin.create(**params)
-    return plugin
+    iotronicclient(request).plugin.create(**params)
 
 
 def plugin_update(request, plugin_id, patch):
     """Update plugin."""
-    plugin = iotronicclient(request).plugin.update(plugin_id, patch)
-    return plugin
+    iotronicclient(request).plugin.update(plugin_id, patch) 
 
 
 def plugin_delete(request, plugin_id):
@@ -136,10 +131,9 @@ def plugin_action(request, board_id, plugin_id, action, params={}):
 
 
 def plugin_remove(request, board_id, plugin_id):
-    """Inject plugin on board(s)."""
-    plugin = iotronicclient(request).plugin_injection. \
+    """Remove plugin from board."""
+    iotronicclient(request).plugin_injection. \
                                      plugin_remove(board_id, plugin_id)
-    return plugin
 
 
 def plugins_on_board(request, board_id):
@@ -176,20 +170,17 @@ def service_create(request, name, port, protocol):
     params = {"name": name,
               "port": port,
               "protocol": protocol}
-    service = iotronicclient(request).service.create(**params)
-    return service
+    iotronicclient(request).service.create(**params)
 
 
 def service_update(request, service_id, patch):
     """Update service."""
-    service = iotronicclient(request).service.update(service_id, patch)
-    return service
+    iotronicclient(request).service.update(service_id, patch)
 
 
 def service_delete(request, service_id):
     """Delete service."""
-    service = iotronicclient(request).service.delete(service_id)
-    return service
+    iotronicclient(request).service.delete(service_id)
 
 
 def services_on_board(request, board_id, detail=False):
@@ -205,7 +196,8 @@ def services_on_board(request, board_id, detail=False):
             details = iotronicclient(request). \
                       service.get(service._info["service"], fields)
 
-            detailed_services.append({"name": details._info["name"],
+            detailed_services.append({"uuid": service._info["service"],
+                                      "name": details._info["name"],
                                       "public_port":
                                           service._info["public_port"],
                                       "port": details._info["port"],
@@ -230,3 +222,20 @@ def restore_services(request, board_id):
                       restore_services(board_id)
     return service_restore
 
+
+# PORTS MANAGEMENT
+def port_list(request, board_id):
+    """Get ports attached to a board."""
+    ports = iotronicclient(request).port.list()
+    return ports
+
+
+def attach_port(request, board_id, network_id, subnet_id):
+    """Attach port to a subnet for a board."""
+    port_attach = iotronicclient(request).portonboard.attach_port(board_id, network_id, subnet_id)
+    return port_attach
+
+
+def detach_port(request, board_id, port_id):
+    """Detach port from the board."""
+    iotronicclient(request).portonboard.detach_port(board_id, port_id)

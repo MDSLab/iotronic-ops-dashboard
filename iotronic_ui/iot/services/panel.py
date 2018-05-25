@@ -14,14 +14,15 @@ from django.utils.translation import ugettext_lazy as _
 
 import horizon
 
+# from openstack_dashboard.api import keystone
 from iotronic_ui.iot import dashboard
 
 
-class Plugins(horizon.Panel):
-    name = _("Plugins")
-    slug = "plugins"
-    # policy_rules = (("iot", "iot:list_all_plugins"),
-    #                ("iot", "iot:list_project_plugins"))
+class Services(horizon.Panel):
+    name = _("Services")
+    slug = "services"
+    permissions = ('openstack.services.iot', )
+    # policy_rules = (("iot", "iot:list_all_services"),)
 
 
-dashboard.Iot.register(Plugins)
+dashboard.Iot.register(Services)

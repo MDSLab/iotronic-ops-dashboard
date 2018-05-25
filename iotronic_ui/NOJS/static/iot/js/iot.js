@@ -1,8 +1,5 @@
 /* Additional JavaScript for iot. */
 
-//alert('MELO');
-
-//var image_url = 'https://ing-res-17.me.trigrid.it/iotronic/';
 var images_url = 'http://'+location.host+'/dashboard/static/iot/images/';
 
 var markers = [];

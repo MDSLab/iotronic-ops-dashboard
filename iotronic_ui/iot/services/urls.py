@@ -10,18 +10,18 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from django.utils.translation import ugettext_lazy as _
+from django.conf.urls import url
 
-import horizon
-
-from iotronic_ui.iot import dashboard
+from iotronic_ui.iot.services import views
 
 
-class Plugins(horizon.Panel):
-    name = _("Plugins")
-    slug = "plugins"
-    # policy_rules = (("iot", "iot:list_all_plugins"),
-    #                ("iot", "iot:list_project_plugins"))
-
-
-dashboard.Iot.register(Plugins)
+urlpatterns = [
+    url(r'^$', views.IndexView.as_view(), name='index'),
+    url(r'^create/$', views.CreateView.as_view(), name='create'),
+    url(r'^(?P<service_id>[^/]+)/update/$', views.UpdateView.as_view(),
+        name='update'),
+    url(r'^(?P<service_id>[^/]+)/action/$', views.ActionView.as_view(),
+        name='action'),
+    url(r'^(?P<service_id>[^/]+)/detail/$', views.ServiceDetailView.as_view(),
+        name='detail'),
+]

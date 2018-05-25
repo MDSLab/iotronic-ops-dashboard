@@ -16,11 +16,12 @@ import horizon
 
 
 class Iot(horizon.Dashboard):
-    name = _("Iot")
+    name = _("IoT")
     slug = "iot"
-    panels = ('boards', 'plugins')  # Add your panels here.
+    panels = ('boards', 'plugins', 'services')  # Add your panels here.
 
     # Specify the slug of the dashboard's default panel.
     default_panel = 'boards'
+
 
 horizon.register(Iot)

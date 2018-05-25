@@ -19,35 +19,22 @@ from horizon import tabs
 
 LOG = logging.getLogger(__name__)
 
-"""
-import inspect
-LOG.debug('CLASSES: %s',
-          inspect.getmembers(tabs, predicate=inspect.isclass))
-"""
-
 
 class OverviewTab(tabs.Tab):
     name = _("Overview")
     slug = "overview"
-    template_name = ("iot/boards/_detail_overview.html")
+    template_name = ("iot/services/_detail_overview.html")
 
     def get_context_data(self, request):
+        # coordinates = self.tab_group.kwargs['board'].__dict__["location"][0]
+        # LOG.debug('IOT INFO: %s', coordinates)
 
-        coordinates = self.tab_group.kwargs['board'].__dict__['location'][0]
-        ports = self.tab_group.kwargs['board']._info['ports']
-        services = self.tab_group.kwargs['board']._info['services']
-        plugins = self.tab_group.kwargs['board']._info['plugins']
-
-        return {"board": self.tab_group.kwargs['board'],
-                "coordinates": coordinates,
-                "services": services,
-                "ports": ports,
-                "plugins": plugins,
+        return {"service": self.tab_group.kwargs['service'],
                 "is_superuser": request.user.is_superuser}
 
 
-class BoardDetailTabs(tabs.TabGroup):
-    slug = "board_details"
+class ServiceDetailTabs(tabs.TabGroup):
+    slug = "service_details"
     # tabs = (OverviewTab, LogTab, ConsoleTab, AuditTab)
     tabs = (OverviewTab,)
     sticky = True
